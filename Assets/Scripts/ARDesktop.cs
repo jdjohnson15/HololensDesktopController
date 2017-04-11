@@ -42,6 +42,16 @@ public class ARDesktop : MonoBehaviour {
         debugPointer = GameObject.CreatePrimitive(PrimitiveType.Cube);
         debugPointer.transform.localScale = Vector3.one * 0.005f;
         debugPointer.GetComponent<MeshRenderer>().material.color = Color.blue;
+
+        RemoteControl.instance.AddParam("Resolutuion Y: ", screenSize.y, _y =>
+        {
+            screenSize.y = (float)_y;
+        }, 240, 8192, 1);
+
+        RemoteControl.instance.AddParam("Resolutuion X: ", screenSize.x, _x =>
+        {
+            screenSize.x = (float)_x;
+        }, 240, 8192, 1);
     }
 
     // Update is called once per frame
@@ -54,7 +64,7 @@ public class ARDesktop : MonoBehaviour {
                 if (hitInfo.collider.gameObject == this.gameObject)
                 {
                     debugPointer.transform.position = hitInfo.point;
-                    // OSCManager.GetComponent<OSCARDesktopManager>().setArg(calculateDesktopCoordinates(hitInfo.point), tapped);
+                    OSCManager.GetComponent<OSCARDesktopManager>().setArg(calculateDesktopCoordinates(hitInfo.point), tapped);
                     calculateDesktopCoordinates(hitInfo.point);
                     if (tapped == 1f)
                         tapped = 0f;

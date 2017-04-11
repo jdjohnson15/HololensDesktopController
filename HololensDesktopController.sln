@@ -1,0 +1,26 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2015
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HololensDesktopController", "HololensDesktopController.csproj", "{E919637E-73BD-F1D7-D085-AB32484D8B9E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HololensDesktopController.Editor", "HololensDesktopController.Editor.csproj", "{BD719D11-10A3-524B-7F5A-DE7CB0CF79AC}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{E919637E-73BD-F1D7-D085-AB32484D8B9E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E919637E-73BD-F1D7-D085-AB32484D8B9E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E919637E-73BD-F1D7-D085-AB32484D8B9E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E919637E-73BD-F1D7-D085-AB32484D8B9E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BD719D11-10A3-524B-7F5A-DE7CB0CF79AC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BD719D11-10A3-524B-7F5A-DE7CB0CF79AC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BD719D11-10A3-524B-7F5A-DE7CB0CF79AC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BD719D11-10A3-524B-7F5A-DE7CB0CF79AC}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

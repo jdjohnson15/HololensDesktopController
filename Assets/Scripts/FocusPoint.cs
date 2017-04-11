@@ -191,11 +191,7 @@ public class FocusPoint : MonoBehaviour {
 
         //set the focus point for the stability frame
         UnityEngine.VR.WSA.HolographicSettings.SetFocusPointForFrame(focusPointTarget, normal); //not most elegant way to handle this. Might benefit from smooth tween between new points
-        if (this.GetComponent<DrawActive>())
-        {
-            //activate a child object listed by an instance of DrawActive declared by this object 
-            this.GetComponent<DrawActive>().setActive(targetName, true);
-        }
+        
         //Debug.Log("Target is now " + targetName);
         //  }
 

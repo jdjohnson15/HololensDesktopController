@@ -15,8 +15,6 @@ public class CustomEventManager : MonoBehaviour
 {
     public static CustomEventManager Instance { get; private set; }
 
-    //class that holds all of the global values
-    Globals globals;
 
     //are the keyboard controls active in the editor?
     public bool useDebugControls = true;
@@ -36,7 +34,6 @@ public class CustomEventManager : MonoBehaviour
 
     private FocusPoint fp;
 
-    private DrawActive drawActive;
 
     GestureRecognizer recognizer;
 
@@ -71,8 +68,7 @@ public class CustomEventManager : MonoBehaviour
         };
         recognizer.StartCapturingGestures();
 
-        //set up globals 
-        globals = GameObject.Find("Globals").GetComponent<Globals>();
+       
 
         //set up Vuforia AR tracking
         vuforia = ARCamera.GetComponent<VuforiaBehaviour>();
@@ -85,16 +81,6 @@ public class CustomEventManager : MonoBehaviour
     void Start()
     {
 
-        //set up globals 
-        globals = GameObject.Find("Globals").GetComponent<Globals>();
-
-        plinthList = new List<GameObject>();
-
-        //populate internal list of plinth references
-        foreach (GameObject go in globals.plinths)
-        {
-            plinthList.Add(go);
-        }
 
         frustrumPlanes = new Plane[6];
         bounds = new Bounds[plinthList.Count];
@@ -106,8 +92,6 @@ public class CustomEventManager : MonoBehaviour
             activationList[index] = go.GetComponent<DrawActive>();
             index++;
         }*/
-        drawActive = this.GetComponent<DrawActive>();
-
 
         //get remote control input for different states 
         RemoteControl.instance.AddParam("AR TRACKING: ", true, b => {
@@ -197,16 +181,12 @@ public class CustomEventManager : MonoBehaviour
         {
             recognizer.CancelGestures();
             recognizer.StartCapturingGestures();
-            if (GazedObject.GetComponent<OSCEvents>())
-            {
-                GazedObject.GetComponent<OSCEvents>().OnGaze();
-                GazedObject.SendMessage("OnGaze");
-            }
+
+            GazedObject.SendMessage("OnGaze");
+
 
             if (oldGazedObject != null)
             {
-                if (oldGazedObject.GetComponent<OSCEvents>())
-                    oldGazedObject.GetComponent<OSCEvents>().OnUngaze();
                 oldGazedObject.SendMessage("OnUngaze");
             }
         }
@@ -214,8 +194,6 @@ public class CustomEventManager : MonoBehaviour
         //not gazing at something but last frame something was gazed at (used to tell a lit plinth to turn its lights off)
         else if (GazedObject == null && oldGazedObject != null)
         {
-            if (oldGazedObject.GetComponent<OSCEvents>())
-                oldGazedObject.GetComponent<OSCEvents>().OnUngaze();
             oldGazedObject.SendMessage("OnUngaze");
         }
 
@@ -297,20 +275,7 @@ public class CustomEventManager : MonoBehaviour
         }
         
         //use DrawActive class (if available) enable/disable children objects 
-        for (int i = 0; i < plinthList.Count; i++)
-        {
-            if (drawActive != null)
-            {
-                if (plinthList[i] == target)
-                {
-                    drawActive.setActive(plinthList[i].name, true);
-                }
-                else
-                {
-                    drawActive.setActive(plinthList[i].name, false);
-                }                  
-            }
-        }
+       
 
         //move the focusPointVisualizer object (if set in editor) to the target's location
 

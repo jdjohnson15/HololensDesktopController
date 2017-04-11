@@ -15,8 +15,6 @@ public class WorldAnchorManager : MonoBehaviour {
 
     public GameObject debugTextGO;
 
-    private DebugText debugText;
-
     private Queue<GameObject> storesToSaveQueue;
 
     public GameObject[] gameObjectsThatNeedAnchors;
@@ -60,9 +58,6 @@ public class WorldAnchorManager : MonoBehaviour {
 
         storesToSaveQueue = new Queue<GameObject>();
         waTable = new List<WorldAnchorTable>();
-
-        if (debugTextGO != null)
-            debugText = debugTextGO.GetComponent<DebugText>();
         /*
         RemoteControl.instance.AddParam("WORLD ANCHOR CLUSTERS: ", clusters, c =>{
             clusters = c;
@@ -572,6 +567,6 @@ public class WorldAnchorManager : MonoBehaviour {
 
     private void printDebug(string message, GameObject go)
     {
-        go.transform.FindChild("UITextPrefab").FindChild("Text").GetComponent<DebugText>().SetMessage(message);
+        //go.transform.FindChild("UITextPrefab").FindChild("Text").GetComponent<DebugText>().SetMessage(message);
     } 
 }
