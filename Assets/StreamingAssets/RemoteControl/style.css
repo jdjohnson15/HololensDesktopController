@@ -1,0 +1,126 @@
+body {
+	background-color: #000;
+	color: #fff;
+	font-family: Sans-Serif;
+	font-weight: normal;
+}
+
+#connection_table {
+	width: 100%;
+	background-color: #aab;
+	color: #444;
+	padding-left: 4px;
+	padding-top: 4px;
+}
+
+#address_label_th {
+	min-width: 60px;
+}
+
+#address_th {
+	width: 80%;
+}
+
+input#address {
+	width: 100%;
+}
+
+#connect_btn_th {
+	width: 10%;
+}
+
+#params_table {
+	width: 100%;
+	background-color: #333;
+	color: #aab;
+	border-collapse: collapse;
+	border: 3px solid #aab;
+	font-size: smaller;
+}
+
+tr.params_table_tr {
+	border: 1px solid #aab;
+}
+
+th.name {
+	padding-left: 5px;
+	width: 20%;
+}
+
+th.value {
+	width: 80%;
+}
+
+/* slider */
+table.slider {
+	width: 100%;
+}
+
+tr.slider {
+	width: 100%;
+}
+
+th.slider {
+	width: 100%;
+}
+
+th.slider_minmax {
+	font-size:70%;
+	padding-right:5px;
+}
+
+input.slider {
+	width: 100%;
+}
+
+input.number {
+	width: 70px;
+	margin-right: 10px;
+}
+
+input.string {
+	width: 100%;
+}
+
+/**************/
+/*	PRESETS   */
+/**************/
+
+#presets_title_table {
+	padding-left: 4px;
+	padding-top: 4px;
+	margin-top: 10px;
+	width: 100%;
+	background-color: #aab;
+	color: #222;
+}
+
+#presets_table {
+	width: 100%;
+	background-color: #222;
+	color: #aab;
+	border: 3px solid #aab;
+}
+
+tr#presets_table_title {
+	background-color: #666;
+}
+
+th {
+	text-align: left;
+}
+
+th.preset_name {
+	font-size: smaller;
+	width: 90%;
+}
+
+input#new_preset_name {
+	float: left;
+	width: 80%;
+}
+
+input#new_preset_btn {
+	width:19%;
+	float: right;
+}

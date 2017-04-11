@@ -1,0 +1,288 @@
+
+<html>
+<head>
+	<meta name="viewport" content="width=320, initial-scale=1">
+	<script src='libs/jquery-3.1.1.min.js'></script>
+	<script src='libs/spectrum.js'></script>
+	<link rel="icon" type="image/png" sizes="96x96" href="/favicon.png">
+	<link rel='stylesheet' href='libs/spectrum.css' />
+	<link rel='stylesheet' href='style.css' />
+</head>
+<body onload='onConnectClick();'>
+	<table id='connection_table'>
+		<tr>
+			<th id='address_label_th'>Address:</th>
+			<th id='address_th'><input id='address' type='text' value='{{websocket_server_address}}' /></th>
+			<!--<th id='address_th'><input id='address' type='text' value='ws://192.168.1.5:8080/rc/' /></th>-->
+			<th id='connect_btn_th'><input type='button' id='connect_btn' onclick='onConnectClick();' value='Connect' /></th>
+		</tr>
+	</table>
+	<div id='app_params_div'><table id='params_table'></table></div>
+    <div id='app_presets_div'>
+    	<table id='presets_title_table'>
+    		<tr>
+    			<th style='width:50%;'>Presets</th>
+    			<th style='width:50%;'><div style='width:100%;'><input id='new_preset_name' type='text' /><input type='button' id='new_preset_btn' onclick='onNewPresetClick();' value='create new' /></div></th>
+    		</tr>
+    	</table>
+        <table id='presets_table'></table>
+    </div>
+
+
+	<script>
+		var socket = undefined;
+		var connected = false;
+
+		function setColorFields() {
+			$(".alphaColorPicker").spectrum({
+    			showAlpha: true,
+    			showButtons: false,
+    			clickoutFiresChange: true,
+    			preferredFormat: "rgb",
+    			showInput: true
+			});
+
+			$(".alphaColorPicker").on('move.spectrum', function(e, tinycolor) {
+				sendParamUpdate(e.target.id, "color", tinycolor.toHex8String());
+			});
+		}
+
+
+		function createInputRow(item) {
+			if (item.type == 'bool') {
+				return "<tr class='params_table_tr'><th class='name'>"+item.name+"</th><th class='value'><input id='"+item.name+"' type='checkbox' "+(item.boolVal?"checked ":" ")+"onchange='onCheckboxChanged(\""+item.name+"\");' /></tr>"
+			}
+			else if (item.type == 'double') {
+				return "<tr class='params_table_tr'>\
+							<th class='name'>"+item.name+"</th>\
+							<th class='value'>\
+										<table class='slider'>\
+											<tr class='slider'>\
+												<th class='number'><input class='number' id='"+item.name+"_number' type='number' step="+item.step+" value="+item.doubleVal+" onchange='onNumberChanged(\""+item.name+"\");' oninput='onNumberChanged(\""+item.name+"\");' /></th>\
+												<th class='slider_minmax'>"+item.min+"</th>\
+												<th class='slider'><input class='slider' id='"+item.name+"_slider' type='range' min="+item.min+" max="+item.max+" step="+item.step+" value="+item.doubleVal+" onchange='onSliderChanged(\""+item.name+"\");' oninput='onSliderChanged(\""+item.name+"\");' /></th>\
+												<th class='slider_minmax'>"+item.max+"</th>\
+											</tr>\
+										</table>\
+							</th>\
+						</tr>";
+			}
+			else if (item.type == 'color') {
+				return "<tr class='params_table_tr'><th class='name'>"+item.name+"</th><th class='value'><input type='text' class='alphaColorPicker' id='"+item.name+"' value="+item.colorVal+" /></th></tr>";
+			}
+			else if (item.type == 'string') {
+				return "<tr class='params_table_tr'><th class='name'>"+item.name+"</th><th class='value'><input type='text' class='string' id='"+item.name+"' value='"+item.stringVal+"' onchange='onStringChanged(\""+item.name+"\");' oninput='onStringChanged(\""+item.name+"\");'/></th></tr>";
+			}
+		}
+
+		function createParametersTable(parameters) {
+			var table = "<table id='params_table'>";
+			parameters.map(function (item) {
+				table += createInputRow(item);
+			});
+			table += "</table>";
+			return table;
+		}
+
+		function createPresetsTable(presetsList) {
+		    var table = "<table id='presets_table'>";
+		    presetsList.map(function (name) {
+		    	table += createPresetRow(name);
+		    });
+		    table += "</table>";
+		    return table;
+		}
+
+		function createPresetRow(name) {
+			return "<tr style='border: 1px solid #aab;'>\
+						<th class='preset_name'>"+name+"</th>\
+						<th><input type='button' onclick='onLoadPreset(\"" + name + "\");' value='load' /></th>\
+						<th><input type='button' onclick='onSavePreset(\"" + name + "\");' value='save' /></th>\
+						<th><input type='button' onclick='onDeletePreset(\"" + name + "\");' value='delete' /></th>\
+					</tr>";
+				//"<tr><th><input type='button' onclick='onLoadPreset(\"" + name + "\");' value='" + name + "' /></th></tr>";
+		}
+
+		function onConnectClick() {
+			// Create websockets connection and define the protocol
+			var address = $('#address').val();
+			console.log("connecting to: "+address);
+
+			socket = new WebSocket(address, "remote-control");
+
+			/* define event types:
+			 * set_param_list - take the parameters list and put them in a table
+			 * update_param   - update one parameter value
+			 */
+			socket.events = [];
+			socket.events['set_param_list'] = function(data) {
+				var jsonData = JSON.parse(data);
+				console.log("received parameters list:");
+				console.log(jsonData.list);
+				$('#params_table').replaceWith(createParametersTable(jsonData.list));
+				setColorFields();
+			};
+			socket.events['update_param'] = function(param) {
+				var jsonParam = JSON.parse(param);
+				onUpdateParam(jsonParam);
+			};
+			socket.events['set_preset_list'] = function (data) {
+			    var jsonData = JSON.parse(data);
+			    console.log("received presets list");
+			    console.log(jsonData.list);
+			    $('#presets_table').replaceWith(createPresetsTable(jsonData.list));
+			    document.getElementById('app_presets_div').style.visibility = "visible";
+			}
+
+			socket.addEventListener("open", function(event) {
+				console.log("connection established");
+				connected = true;
+				document.getElementById('connect_btn').value = "Disconnect";
+				document.getElementById('connect_btn').onclick = function() { onDisconnectClick(); };
+				getParamList();
+				getPresetList();
+			});
+
+			socket.addEventListener("message", function(event) {
+				// console.log("server says: "+event.data);
+				// console.log(event);
+				var json = JSON.parse(event.data);
+				if (socket.events[json.type] != undefined) {
+					socket.events[json.type](json.data);
+				}
+			});
+
+			socket.addEventListener("error", function(event) {
+				console.log("socket error");
+				console.log(event);
+			});
+
+			socket.addEventListener("close", function(event) {
+				console.log("connection closed");
+				connected = false;
+				socket = undefined;
+				var params=[], presets=[];
+				$('#params_table').replaceWith(createParametersTable(params));
+				$('#presets_table').replaceWith(createPresetsTable(presets));
+				document.getElementById('connect_btn').value = "Connect";
+				document.getElementById('connect_btn').onclick = function () { onConnectClick(); };
+				document.getElementById('app_presets_div').style.visibility = "hidden";
+			});
+		}
+
+		function onNewPresetClick() {
+			var name = document.getElementById('new_preset_name').value;
+			if (name != "") {
+				onSavePreset(name);
+			}
+			else {
+				alert("Please specify name for the new preset.");
+			}
+		}
+
+		function onLoadPreset(name) {
+		    var json = {
+		        type: 'load_preset',
+                data: name
+		    }
+		    socket.send(JSON.stringify(json));
+		}
+
+		function onSavePreset(name) {
+		    var json = {
+		        type: 'save_preset',
+		        data: name
+		    }
+		    socket.send(JSON.stringify(json));
+		}
+
+		function onDeletePreset(name) {
+			var json = {
+				type: 'delete_preset',
+				data: name
+			}
+			socket.send(JSON.stringify(json));
+		}
+
+		function onDisconnectClick() {
+			if (!connected || socket==undefined) {
+				return;
+			}
+
+			socket.close();
+		}
+
+		function getParamList() {
+			var json = {
+				type: 'get_param_list',
+				data: ''
+			}
+			socket.send(JSON.stringify(json));
+		}
+
+		function getPresetList() {
+		    var json = {
+		        type: 'get_preset_list',
+		        data: ''
+		    }
+		    socket.send(JSON.stringify(json));
+		}
+
+		function onSliderChanged(name) {
+			// get value
+			var value = $("[id='"+name+"_slider']").val();
+			$("[id='"+name+"_number']").val(value);
+			sendParamUpdate(name, "double", value);
+		}
+
+		function onNumberChanged(name) {
+			var value = $("[id='"+name+"_number']").val();
+			$("[id='"+name+"_slider']").val(value);
+			sendParamUpdate(name, "double", value);
+		}
+
+		function onCheckboxChanged(name) {
+			var value = document.getElementById(name).checked;
+			sendParamUpdate(name, "bool", value);
+		}
+
+		function onStringChanged(name) {
+			var value = $("[id='"+name+"']").val();
+			sendParamUpdate(name, "string", value);
+		}
+
+		function sendParamUpdate(name, type, value) {
+			if (socket==undefined) {
+				return;
+			}
+			var paramName = type + "Val";
+			var param = {
+				"name": name,
+				"type": type
+			}
+			param[paramName] = value;
+			var json = {
+				type: 'update_param',
+				data: JSON.stringify(param)
+			}
+			socket.send(JSON.stringify(json));
+		}
+
+		function onUpdateParam(param) {
+			if (param.type=='bool') {
+				document.getElementById(param.name).checked = param.boolVal;
+			}
+			else if (param.type=='double') {
+				document.getElementById(param.name+"_slider").value = param.doubleVal;
+				document.getElementById(param.name+"_number").value = param.doubleVal;
+			}
+			else if (param.type=='color') {
+				$("[id='"+param.name+"']").spectrum('set',param.colorVal);
+			}
+			else if (param.type=='string') {
+				document.getElementById(param.name).value = param.stringVal;
+			}
+		}
+	</script>
+</body>
+</html>
